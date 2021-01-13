@@ -1,0 +1,76 @@
+__________________________________________________________________________________________________________________________________
+                                  What you'll accomplish:-
+ _________________________________________________________________________________________________________________________________
+ 1. Create an Amazon EC2 instance 
+ 2. Configure the instance with Apache Webserver. 
+ 3. Create Database using MySQL engine in Amazon RDS
+ 4. Download php application name "WordPress".
+ 5. As wordpress stores data at the backend in MySQL Database server. Therefore, you need to setup a MySQL server using AWS RDS service using Free Tier.
+ 6. Provide the endpoint/connection string to the WordPress application to make it work.
+ 
+ /*----------- 👀Prerequisites:----------------------------------------------------------------------------*/
+ 
+An AWS Account: You will need an AWS account to begin provisioning resources to host WordPress.
+Skill level: Prior experience with WordPress is required.
+AWS Experience: Intermediate familiarity with AWS and its services is recommended.
+
+!! Requirements to run WordPress :-
+      PHP version 7.4 or greater.
+      MySQL version 5.6 or greater.
+
+/*--------------Amazon ec2 configuration :----------------------------------------------------------------*/
+
+AMI     : Red Hat Enterprise Linux 8 (HVM), SSD Volume Type - ami-0a9d27a9f4f5c0efc
+Instance type : t2.micro
+Storage root : 10 gb
+Security group : All traffic - Anywhere 0.0.0.0/0, ::/0
+
+/*-------------- Run following commands on instance to install required programs:----------------------*/
+
+yum install httpd vim -y
+dnf install wget -y
+
+/*-------------Create database from Amazon RDS-----------------------------------------------------------*/
+
+Engine Option  : MySQL
+Templates  :  Free Tier
+Settings : database instance identifier, username and password
+Connectivity : Public access; VPC security group(modify inbound rules to access remotely from ec2 instance) 
+
+/*-------------- PHP installation on the ec2 & download WordPress code and extract to /var/www/html------------*/
+
+yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y
+yum install https://rpms.remirepo.net/enterprise/remi-release-8.rpm -y
+dnf module install php:remi-7.4
+yum install php-mysqlnd -y
+
+wget http://wordpress.org/latest.tar.gz 
+tar xf latest.tar.gz -C /var/www/html
+
+yum install mysql -y
+
+/*-------------Access RDS database from the ec2 instance------------------------------------------------------*/
+
+mysql -h <endpoint_connection_string> -u <user_name> -p
+create database <db_name> ;
+exit
+
+/*-------------- start and enable httpd service and disable selinux-----------------------------------------*/
+
+systemctl start httpd
+systemctl enable httpd
+setenforce 0
+
+/*--------------Access WordPress from web and its configuration----------------------------------------------*/
+
+On web browser, type <IP_addr>/wordpress (IP_addr: public IPv4 address of the ec2 instance)
+Give database name, <db_name>, username, password and endpoint url
+
+/*------------- configure config file, wp-config.php on the instance----------------------------------------*/
+
+Create a file, wp-config.php inside /var/www/html/wordpress using cmd : vim wp-config.php
+Copy code appeared on the web to the file, wp-config.php
+Restart httpd : systemctl restart httpd
+Run WordPress installation and use it!
+
+                                                  ***Thank you***
